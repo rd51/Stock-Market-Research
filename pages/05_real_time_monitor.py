@@ -149,6 +149,10 @@ def create_data_freshness_indicators(realtime_feed: Optional[Any], predictor: Op
         logger.error(f"Error fetching combined stats: {e}")
         stats = {}
 
+    # Inform user if demo fallbacks were used
+    if stats.get('demo_mode'):
+        st.info("ℹ️ Demo data is being shown for missing sources to enable the dashboard to display. This is generated locally.")
+
     # If market closed and no cache data, show a helpful note
     if use_live and not force_live and 'is_market_open' in stats and not stats.get('is_market_open'):
         # If all key sources are None, make an explicit warning
