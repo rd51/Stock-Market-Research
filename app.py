@@ -317,6 +317,18 @@ def attach_all_local_modules(strict: bool = True) -> List[str]:
 
     return attached
 
+# Ensure logging directory exists and configure logging early so attach routine can use it
+os.makedirs('logs', exist_ok=True)
+logging.basicConfig(
+    level=logging.INFO,
+    format='%(asctime)s - %(levelname)s - %(message)s',
+    handlers=[
+        logging.FileHandler('logs/dashboard.log'),
+        logging.StreamHandler()
+    ]
+)
+logger = logging.getLogger(__name__)
+
 # By default perform strict attach (per your selection)
 try:
     attached_modules = attach_all_local_modules(strict=True)
@@ -345,19 +357,7 @@ try:
 except ImportError:
     PREDICTOR_AVAILABLE = False
 
-# Set up logging
-import os
-os.makedirs('logs', exist_ok=True)
-
-logging.basicConfig(
-    level=logging.INFO,
-    format='%(asctime)s - %(levelname)s - %(message)s',
-    handlers=[
-        logging.FileHandler('logs/dashboard.log'),
-        logging.StreamHandler()
-    ]
-)
-logger = logging.getLogger(__name__)
+# Logging configured above prior to module auto-attach to ensure logger is available
 
 # Constants
 DEFAULT_DATE_RANGE = 365 * 7  # 7 years to include historical data
