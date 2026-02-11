@@ -55,9 +55,9 @@ except ImportError:
     logging.warning("json not available - JSON output disabled")
 
 try:
-    import tabulate
+    import tabulate  # type: ignore
     TABULATE_AVAILABLE = True
-except ImportError:
+except Exception:
     TABULATE_AVAILABLE = False
     logging.warning("tabulate not available - markdown tables disabled")
 
@@ -374,8 +374,9 @@ class ComparisonReportGenerator:
             plots['regime_breakdown'] = self.plot_regime_breakdown(comparison_data['regime_breakdown'])
 
         if 'predictions' in comparison_data and 'dates' in comparison_data:
+            y_true_arr = np.asarray(comparison_data.get('y_true') if comparison_data.get('y_true') is not None else np.array([]))
             plots['prediction_overlay'] = self.create_prediction_overlay_plot(
-                comparison_data.get('y_true'),
+                y_true_arr,
                 comparison_data['predictions'],
                 comparison_data['dates'],
                 comparison_data.get('regime_labels')
@@ -407,7 +408,8 @@ class ComparisonReportGenerator:
 
             # Create color gradient (green to red)
             n_models = len(df_plot)
-            colors = plt.cm.RdYlGn_r(np.linspace(0, 1, n_models))
+            cmap = plt.cm.get_cmap('RdYlGn_r')
+            colors = cmap(np.linspace(0, 1, n_models))
 
             bars = ax.barh(df_plot['Model'], df_plot['RMSE'], color=colors, alpha=0.8)
 
@@ -448,7 +450,8 @@ class ComparisonReportGenerator:
 
             df_plot = summary_table.dropna(subset=['MAE']).sort_values('MAE')
             n_models = len(df_plot)
-            colors = plt.cm.RdYlGn_r(np.linspace(0, 1, n_models))
+            cmap = plt.cm.get_cmap('RdYlGn_r')
+            colors = cmap(np.linspace(0, 1, n_models))
 
             bars = ax.barh(df_plot['Model'], df_plot['MAE'], color=colors, alpha=0.8)
 
@@ -487,7 +490,8 @@ class ComparisonReportGenerator:
 
             df_plot = summary_table.dropna(subset=['Direction_Acc']).sort_values('Direction_Acc', ascending=False)
             n_models = len(df_plot)
-            colors = plt.cm.RdYlGn(np.linspace(0, 1, n_models))  # Green to red, higher accuracy = greener
+            cmap = plt.cm.get_cmap('RdYlGn')
+            colors = cmap(np.linspace(0, 1, n_models))  # Green to red, higher accuracy = greener
 
             bars = ax.barh(df_plot['Model'], df_plot['Direction_Acc'], color=colors, alpha=0.8)
 
@@ -661,17 +665,28 @@ class ComparisonReportGenerator:
             # Create x-axis
             if dates is None:
                 x = np.arange(len(y_true))
+                x_vals = x
             else:
                 x = dates
+                # Try to convert dates to matplotlib numeric format for axis operations
+                try:
+                    import matplotlib.dates as mdates
+                    x_vals = mdates.date2num(pd.to_datetime(x))
+                    use_dates = True
+                except Exception:
+                    # Fallback to raw array if conversion fails
+                    x_vals = np.arange(len(y_true))
+                    use_dates = False
 
             # Plot actual values
-            ax.plot(x, y_true, 'k-', linewidth=3, label='Actual', alpha=0.9)
+            ax.plot(x_vals, y_true, 'k-', linewidth=3, label='Actual', alpha=0.9)
 
             # Plot predictions from each model
-            colors = plt.cm.tab10(np.linspace(0, 1, len(predictions_dict)))
+            cmap = plt.cm.get_cmap('tab10')
+            colors = cmap(np.linspace(0, 1, len(predictions_dict)))
             for i, (model_name, y_pred) in enumerate(predictions_dict.items()):
                 if len(y_pred) == len(y_true):
-                    ax.plot(x, y_pred, color=colors[i], linewidth=2,
+                    ax.plot(x_vals, y_pred, color=colors[i], linewidth=2,
                            label=model_name, alpha=0.8)
 
             # Add regime background shading if available
@@ -688,7 +703,7 @@ class ComparisonReportGenerator:
                         ends = np.where(diff == -1)[0]
 
                         for start, end in zip(starts, ends):
-                            ax.axvspan(x[start], x[min(end, len(x)-1)],
+                            ax.axvspan(float(x_vals[start]), float(x_vals[min(end, len(x_vals)-1)]),
                                      alpha=0.2, color=regime_colors[i % len(regime_colors)],
                                      label=f'Regime {regime}' if i == 0 else "")
 
@@ -1067,7 +1082,7 @@ class ComparisonReportGenerator:
         logger.info("Generating LaTeX table")
 
         try:
-            latex_code = """
+            latex_code = r"""
 \\begin{table}[h!]
 \\centering
 \\caption{Financial Forecasting Model Comparison}
