@@ -588,6 +588,51 @@ class RealtimeDataFeed:
             result['overall_freshness'] = 'stale'
 
         logger.info(f"All data fetched - freshness: {result['overall_freshness']}")
+
+        # If no real data available for key sources, provide a demo fallback so UI shows meaningful values
+        key_sources = [result.get('unemployment'), result.get('vix'), result.get('market_index')]
+        if all(v is None for v in key_sources):
+            logger.warning("No data found for unemployment/VIX/market_index - generating demo fallback data")
+            demo_ts = datetime.now()
+            demo_unemployment = {
+                'timestamp': demo_ts,
+                'unemployment_rate': 7.5,
+                'data_source': 'demo',
+                'is_fresh': True,
+                'age_hours': 0
+            }
+            demo_vix = {
+                'timestamp': demo_ts,
+                'vix_close': 15.0,
+                'data_source': 'demo',
+                'is_fresh': True,
+                'age_minutes': 0
+            }
+            demo_market = {
+                'timestamp': demo_ts,
+                'index_name': 'NIFTY50',
+                'close': 18000.0,
+                'change': 18.0,
+                'change_pct': 0.1,
+                'volume': 1_000_000,
+                'data_source': 'demo',
+                'is_fresh': True
+            }
+
+            # Update result and mark demo mode
+            result['unemployment'] = demo_unemployment
+            result['vix'] = demo_vix
+            result['market_index'] = demo_market
+            result['overall_freshness'] = 'demo'
+            result['demo_mode'] = True
+
+            # Cache the demo data so subsequent calls can use it
+            try:
+                self.cache_data({'unemployment': demo_unemployment, 'vix': demo_vix, 'market_index': demo_market}, cache_type='standard')
+                logger.info('Demo fallback data cached')
+            except Exception as e:
+                logger.warning(f'Failed to cache demo data: {e}')
+
         return result
 
     def cache_data(self, data_dict: Dict[str, Any], cache_type: str = 'standard') -> bool:
