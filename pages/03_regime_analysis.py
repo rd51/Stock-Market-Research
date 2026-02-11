@@ -872,6 +872,3 @@ def main():
 
 if __name__ == "__main__":
     main()
-
-    # Calculate returns
-    df['returns'] = df['NIFTY_Close'].pct_change()
