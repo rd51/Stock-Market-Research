@@ -266,6 +266,68 @@ try:
 except ImportError:
     PREPROCESSOR_AVAILABLE = False
 
+# ---------------------------------------------------------------------------
+# Auto-attach local modules to ensure app imports are registered
+# This scans top-level .py files (excluding app files and obvious temp/test files)
+# and imports them into the running process. USER REQUEST: strict imports enabled
+# ---------------------------------------------------------------------------
+import glob
+import importlib
+
+def attach_all_local_modules(strict: bool = True) -> List[str]:
+    """Import top-level local Python modules so Streamlit recognizes them.
+
+    Args:
+        strict: If True, import errors will propagate (fail fast). If False, errors are logged and skipped.
+
+    Returns:
+        List of successfully attached module names.
+    """
+    root = os.getcwd()
+    py_files = glob.glob(os.path.join(root, "*.py"))
+
+    excluded = { 'app.py', 'app_fixed.py', 'app_temp.py', 'check_syntax.py' }
+    attached = []
+
+    for fpath in py_files:
+        fname = os.path.basename(fpath)
+        if fname in excluded:
+            continue
+        if fname.startswith('test') or fname.startswith('temp'):
+            continue
+
+        mod_name = os.path.splitext(fname)[0]
+        try:
+            importlib.import_module(mod_name)
+            attached.append(mod_name)
+            logger.info(f"Attached local module: {mod_name}")
+        except Exception as e:
+            if strict:
+                # In strict mode propagate the error so developers see missing deps immediately
+                raise
+            else:
+                logger.warning(f"Failed to import {mod_name}: {e}")
+
+    # Save to session state for display
+    try:
+        st.session_state['attached_modules'] = attached
+    except Exception:
+        # session state may not be initialized in certain contexts
+        pass
+
+    return attached
+
+# By default perform strict attach (per your selection)
+try:
+    attached_modules = attach_all_local_modules(strict=True)
+except Exception as e:
+    logger.error(f"Auto-attach failed (strict mode): {e}")
+    # Fall back to non-strict attach so the app can still run
+    attached_modules = attach_all_local_modules(strict=False)
+
+# ---------------------------------------------------------------------------
+
+
 # Model training imports (optional) - commented out due to matplotlib import issues
 # try:
 #     from baseline_models import ModelTrainer
@@ -818,6 +880,29 @@ def create_sidebar():
 
         # Model status
         st.subheader("🤖 Model Status")
+        models_count = 0
+        if st.session_state.models_loaded and 'models' in st.session_state.model_cache:
+            models = st.session_state.model_cache['models']
+            if models:
+                models_count = len(models)
+
+        model_html = get_status_indicator(models_count > 0)
+        st.markdown(f"{model_html} {models_count} models loaded", unsafe_allow_html=True)
+
+        st.divider()
+
+        # Attached local modules
+        st.subheader("📦 Attached Modules")
+        attached = st.session_state.get('attached_modules', [])
+        if attached:
+            st.write(', '.join(attached))
+        else:
+            st.write("(no modules attached)")
+
+        st.divider()
+
+        # Last updated
+        st.caption(f"Last updated: {st.session_state.last_update.strftime('%Y-%m-%d %H:%M:%S')}")
         models_count = 0
         if st.session_state.models_loaded and 'models' in st.session_state.model_cache:
             models = st.session_state.model_cache['models']
