@@ -18,6 +18,15 @@ from typing import Dict, List, Any, Optional, Tuple
 import warnings
 warnings.filterwarnings('ignore')
 
+# JSON availability (defensive import for constrained environments)
+try:
+    import json
+    JSON_AVAILABLE = True
+except Exception as e:
+    JSON_AVAILABLE = False
+    json = None
+    warnings.warn(f"json module not available; JSON exports disabled: {e}")
+
 st.set_page_config(page_title="Real-Time Monitor - Stock Market AI Analytics", page_icon="📈")
 
 # Import monitoring components
@@ -727,14 +736,17 @@ def create_export_download_options(realtime_feed: Optional[Any], predictor: Opti
                         'market': realtime_feed.get_latest_market_index('NIFTY50')
                     }
 
-                    json_data = json.dumps(data, indent=2, default=str)
-                    st.download_button(
-                        label="Download JSON",
-                        data=json_data,
-                        file_name=f"live_data_{datetime.now().strftime('%Y%m%d_%H%M%S')}.json",
-                        mime="application/json",
-                        use_container_width=True
-                    )
+                    if not JSON_AVAILABLE:
+                        st.error("❌ JSON export not available (json module missing)")
+                    else:
+                        json_data = json.dumps(data, indent=2, default=str)
+                        st.download_button(
+                            label="Download JSON",
+                            data=json_data,
+                            file_name=f"live_data_{datetime.now().strftime('%Y%m%d_%H%M%S')}.json",
+                            mime="application/json",
+                            use_container_width=True
+                        )
                 else:
                     st.error("❌ No data to export")
             except Exception as e:
@@ -745,16 +757,19 @@ def create_export_download_options(realtime_feed: Optional[Any], predictor: Opti
         if st.button("🔮 Export Predictions", use_container_width=True):
             try:
                 if predictor:
-                    predictions = predictor.update_predictions_on_new_data()
-                    if predictions:
-                        json_data = json.dumps(predictions, indent=2, default=str)
-                        st.download_button(
-                            label="Download JSON",
-                            data=json_data,
-                            file_name=f"predictions_{datetime.now().strftime('%Y%m%d_%H%M%S')}.json",
-                            mime="application/json",
-                            use_container_width=True
-                        )
+                        predictions = predictor.update_predictions_on_new_data()
+                        if predictions:
+                            if not JSON_AVAILABLE:
+                                st.error("❌ JSON export not available (json module missing)")
+                            else:
+                                json_data = json.dumps(predictions, indent=2, default=str)
+                                st.download_button(
+                                    label="Download JSON",
+                                    data=json_data,
+                                    file_name=f"predictions_{datetime.now().strftime('%Y%m%d_%H%M%S')}.json",
+                                    mime="application/json",
+                                    use_container_width=True
+                                )
                     else:
                         st.error("❌ No predictions to export")
                 else:
@@ -769,14 +784,17 @@ def create_export_download_options(realtime_feed: Optional[Any], predictor: Opti
                 if realtime_feed:
                     stats = realtime_feed.get_monitoring_stats()
                     if stats:
-                        json_data = json.dumps(stats, indent=2, default=str)
-                        st.download_button(
-                            label="Download JSON",
-                            data=json_data,
-                            file_name=f"monitoring_stats_{datetime.now().strftime('%Y%m%d_%H%M%S')}.json",
-                            mime="application/json",
-                            use_container_width=True
-                        )
+                        if not JSON_AVAILABLE:
+                            st.error("❌ JSON export not available (json module missing)")
+                        else:
+                            json_data = json.dumps(stats, indent=2, default=str)
+                            st.download_button(
+                                label="Download JSON",
+                                data=json_data,
+                                file_name=f"monitoring_stats_{datetime.now().strftime('%Y%m%d_%H%M%S')}.json",
+                                mime="application/json",
+                                use_container_width=True
+                            )
                     else:
                         st.error("❌ No stats to export")
                 else:
@@ -796,14 +814,17 @@ def create_export_download_options(realtime_feed: Optional[Any], predictor: Opti
                     'alerts': ['System Operational']
                 }
 
-                json_data = json.dumps(report_data, indent=2)
-                st.download_button(
-                    label="Download Report",
-                    data=json_data,
-                    file_name=f"monitoring_report_{datetime.now().strftime('%Y%m%d_%H%M%S')}.json",
-                    mime="application/json",
-                    use_container_width=True
-                )
+                if not JSON_AVAILABLE:
+                    st.error("❌ JSON export not available (json module missing)")
+                else:
+                    json_data = json.dumps(report_data, indent=2)
+                    st.download_button(
+                        label="Download Report",
+                        data=json_data,
+                        file_name=f"monitoring_report_{datetime.now().strftime('%Y%m%d_%H%M%S')}.json",
+                        mime="application/json",
+                        use_container_width=True
+                    )
             except Exception as e:
                 st.error(f"❌ Report generation failed: {e}")
 
