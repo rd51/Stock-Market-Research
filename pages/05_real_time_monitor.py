@@ -89,6 +89,10 @@ def create_data_source_controls():
         # Persist selection in session state so other functions can respect it
         st.session_state['data_mode'] = data_mode
 
+        # Option to force live fetches even when market is closed
+        force_live = st.checkbox("Force Live (ignore market hours)", value=False, help="Attempt live fetches even when markets are closed; may return stale or empty results if sources are unavailable")
+        st.session_state['force_live'] = force_live
+
     with col2:
         refresh_rate = st.selectbox(
             "Refresh Rate",
@@ -103,7 +107,7 @@ def create_data_source_controls():
     with col4:
         manual_refresh = st.button("🔄 Manual Refresh", use_container_width=True)
 
-    return data_mode, refresh_rate, auto_refresh, manual_refresh
+    return data_mode, refresh_rate, auto_refresh, manual_refresh, force_live
 
 def _resolve_timestamp(item: Any) -> Optional[datetime]:
     """Normalize timestamp fields from different data sources to a datetime or None."""
@@ -129,16 +133,24 @@ def create_data_freshness_indicators(realtime_feed: Optional[Any], predictor: Op
 
     # Determine whether to attempt live fetches based on user selection
     data_mode = st.session_state.get('data_mode', 'Hybrid')
+    force_live = st.session_state.get('force_live', False)
     use_live = False if data_mode == 'Cache' else True
 
     try:
         # Prefer fetching latest combined data when possible so freshness reflects choice
         if hasattr(realtime_feed, 'fetch_all_latest_data'):
-            stats = realtime_feed.fetch_all_latest_data(use_live=use_live)
+            stats = realtime_feed.fetch_all_latest_data(use_live=use_live, respect_market_hours=not force_live)
         else:
             stats = realtime_feed.get_monitoring_stats()
-    except Exception:
+    except Exception as e:
+        logger.error(f"Error fetching combined stats: {e}")
         stats = {}
+
+    # If market closed and no cache data, show a helpful note
+    if use_live and not force_live and 'is_market_open' in stats and not stats.get('is_market_open'):
+        # If all key sources are None, make an explicit warning
+        if not stats.get('unemployment') and not stats.get('vix') and not stats.get('market_index'):
+            st.warning("⚠️ No live data available while the market is closed and no cached data present. Consider enabling 'Force Live' or switching to 'Cache' mode.")
 
     col1, col2, col3, col4 = st.columns(4)
 
@@ -920,7 +932,11 @@ def main():
 
     with tab1:
         # Data source controls
-        data_mode, refresh_rate, auto_refresh, manual_refresh = create_data_source_controls()
+        data_mode, refresh_rate, auto_refresh, manual_refresh, force_live = create_data_source_controls()
+
+        # Inform user if market is closed and Live mode was selected without force
+        if data_mode == 'Live' and not force_live and realtime_feed and not realtime_feed.is_market_open():
+            st.warning("⚠️ Market currently closed — live fetches are disabled unless you enable 'Force Live'. Using cached data where available.")
 
         st.markdown("---")
 
