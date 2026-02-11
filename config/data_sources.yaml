@@ -1,0 +1,55 @@
+# Data Sources Configuration
+# This file contains configuration for various data sources used in the application
+
+data_sources:
+  # NSE India data source
+  nse:
+    base_url: "https://www.nseindia.com"
+    timeout: 30
+    retries: 3
+
+  # BSE India data source
+  bse:
+    base_url: "https://www.bseindia.com"
+    timeout: 30
+    retries: 3
+
+  # Yahoo Finance data source
+  yahoo_finance:
+    base_url: "https://finance.yahoo.com"
+    timeout: 30
+    retries: 3
+
+  # Investing.com data source
+  investing_com:
+    base_url: "https://www.investing.com"
+    timeout: 30
+    retries: 3
+
+  # RBI data source for economic indicators
+  rbi:
+    base_url: "https://www.rbi.org.in"
+    timeout: 30
+    retries: 3
+
+  # Ministry of Labour data source
+  labour_ministry:
+    base_url: "https://labour.gov.in"
+    timeout: 30
+    retries: 3
+
+# Database configuration
+database:
+  type: "sqlite"
+  path: "./data/market_data.db"
+
+# Cache configuration
+cache:
+  enabled: true
+  directory: "./data/cache"
+  max_age_days: 7
+
+# Logging configuration
+logging:
+  level: "INFO"
+  file: "./data/logs/data_ingestion.log"

@@ -1,0 +1,31 @@
+{
+  "stability": {
+    "RandomForest": {
+      "mean_performance": 0.24125049108529417,
+      "std_performance": 0.008809500333059633,
+      "coefficient_of_variation": 0.03651598922526144,
+      "stable": "True",
+      "n_successful_bootstraps": 5
+    },
+    "LinearRegression": {
+      "mean_performance": 0.22616185963423127,
+      "std_performance": 0.002579384166475039,
+      "coefficient_of_variation": 0.011405036068622025,
+      "stable": "True",
+      "n_successful_bootstraps": 5
+    }
+  },
+  "backtest": {
+    "RandomForest": {
+      "rmse": 0.4950546532553375,
+      "mae": 0.4063165164944522,
+      "direction_accuracy": 0.8826530612244898
+    },
+    "LinearRegression": {
+      "rmse": 0.48829165833181465,
+      "mae": 0.3991160698888993,
+      "direction_accuracy": 0.8809523809523809
+    }
+  },
+  "ood": {}
+}

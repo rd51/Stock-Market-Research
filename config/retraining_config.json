@@ -1,0 +1,30 @@
+{
+  "schedule": {
+    "weekly_retraining_day": "sunday",
+    "weekly_retraining_time": "02:00",
+    "timezone": "Asia/Kolkata"
+  },
+  "performance_thresholds": {
+    "min_r2_score": 0.6,
+    "max_mae_increase_pct": 15.0,
+    "max_rmse_increase_pct": 15.0,
+    "min_accuracy_decline_pct": -10.0,
+    "performance_window_days": 30
+  },
+  "retraining_triggers": {
+    "data_age_days": 7,
+    "performance_check_interval_hours": 24,
+    "auto_retrain_enabled": true,
+    "manual_retrain_cooldown_hours": 6
+  },
+  "model_versioning": {
+    "max_versions_to_keep": 10,
+    "version_naming_format": "model_{model_name}_{timestamp}_{performance_score:.3f}",
+    "backup_before_retrain": true
+  },
+  "notifications": {
+    "email_enabled": false,
+    "slack_enabled": false,
+    "log_level": "INFO"
+  }
+}

@@ -1,0 +1,2 @@
+model_1,model_2,rmse_1,rmse_2,dm_statistic,dm_p_value,dm_significant,dm_model1_better,ttest_statistic,ttest_p_value,ttest_significant,ttest_model1_better
+RandomForest,LinearRegression,0.496501420466929,0.49323476150053047,0.8339108758025193,0.4043312081325787,False,False,-0.021052308601769775,0.9832109393260268,False,False

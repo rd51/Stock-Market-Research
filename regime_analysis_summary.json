@@ -1,0 +1,45 @@
+{
+  "volatility_clustering": {
+    "test_statistic": 40.901476214766376,
+    "p_value": 0.003835262810402848,
+    "is_clustered": "True",
+    "significance_level": 0.05
+  },
+  "asymmetric_response": {
+    "overall": {
+      "positive_shock_avg_return": 0.002906575520874464,
+      "negative_shock_avg_return": 0.0043212850485254035,
+      "positive_shock_count": 253,
+      "negative_shock_count": 243,
+      "asymmetry_index": 0.672618327241871
+    },
+    "by_regime": {
+      "0": {
+        "positive_shock_avg_return": -0.0003537299670048081,
+        "negative_shock_avg_return": 0.0001437151960074477,
+        "positive_shock_count": 80,
+        "negative_shock_count": 79,
+        "asymmetry_index": 2.4613261285638637
+      },
+      "1": {
+        "positive_shock_avg_return": 0.006158131019883082,
+        "negative_shock_avg_return": 0.002231234640592065,
+        "positive_shock_count": 89,
+        "negative_shock_count": 80,
+        "asymmetry_index": 2.759965674541967
+      },
+      "2": {
+        "positive_shock_avg_return": 0.00256652789728607,
+        "negative_shock_avg_return": 0.010240714226901423,
+        "positive_shock_count": 84,
+        "negative_shock_count": 84,
+        "asymmetry_index": 0.2506200095442596
+      }
+    }
+  },
+  "regime_summary": {
+    "total_regimes": 3,
+    "total_observations": 500,
+    "avg_regime_duration": 59.19444444444445
+  }
+}

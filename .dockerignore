@@ -1,0 +1,23 @@
+# Exclude large data and model files
+data/
+models/
+processed_data/
+checkpoints/
+*.csv
+*.png
+*.jpg
+*.jpeg
+*.pdf
+__pycache__/
+.pytest_cache/
+.venv/
+*.log
+comparison_results/
+dashboard/
+tests/
+*.bat
+*.sh
+*.md
+.env
+!docker-compose.yml
+!.dockerignore

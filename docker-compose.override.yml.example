@@ -1,0 +1,20 @@
+# Docker Compose Override for Development
+# Copy this file to docker-compose.override.yml for development customizations
+
+version: '3.8'
+
+services:
+  streamlit_app:
+    # Mount source code for live reloading during development
+    volumes:
+      - .:/app
+      - ./data:/app/data
+    environment:
+      - LOG_LEVEL=DEBUG
+    # Override command for development (if needed)
+    # command: streamlit run app.py --server.headless=true --server.port=8501
+
+  postgres:
+    # Expose PostgreSQL port for direct access during development
+    ports:
+      - "5432:5432"

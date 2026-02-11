@@ -1,0 +1,51 @@
+version: '3.8'
+
+services:
+  streamlit_app:
+    build: .
+    ports:
+      - "8501:8501"
+    volumes:
+      - ./data:/app/data
+    env_file:
+      - .env
+    environment:
+      - DATA_SOURCES_CONFIG=/app/config/data_sources.yaml
+      - MARKET_HOLIDAYS_CONFIG=/app/config/market_holidays.yaml
+      - LOG_LEVEL=INFO
+      - DB_HOST=postgres
+      - DB_PORT=5432
+      - DB_NAME=stockmarket
+      - DB_USER=postgres
+      - DB_PASSWORD=postgres
+    depends_on:
+      postgres:
+        condition: service_healthy
+    healthcheck:
+      test: ["CMD", "curl", "-f", "http://localhost:8501/_stcore/health"]
+      interval: 30s
+      timeout: 10s
+      retries: 3
+    restart: unless-stopped
+
+  postgres:
+    image: postgres:15-alpine
+    env_file:
+      - .env
+    environment:
+      - POSTGRES_DB=stockmarket
+      - POSTGRES_USER=postgres
+      - POSTGRES_PASSWORD=postgres
+    volumes:
+      - postgres_data:/var/lib/postgresql/data
+    ports:
+      - "5432:5432"
+    healthcheck:
+      test: ["CMD-SHELL", "pg_isready -U postgres"]
+      interval: 10s
+      timeout: 5s
+      retries: 5
+    restart: unless-stopped
+
+volumes:
+  postgres_data:

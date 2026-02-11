@@ -1,0 +1,38 @@
+# Core dependencies for Streamlit app
+streamlit
+pandas
+numpy
+python-dotenv
+psycopg2-binary
+sqlalchemy
+requests
+pyyaml
+python-dateutil
+
+# Statistical modeling
+statsmodels
+scipy
+
+# Testing
+pytest
+pytest-mock
+pytest-cov
+
+# Development & Debugging
+ipython
+jupyter
+black
+pylint
+mypy
+
+# Hyperparameter Optimization
+optuna
+
+# Additional utilities
+tqdm
+joblib
+pydantic
+
+# Production
+gunicorn
+python-multipart

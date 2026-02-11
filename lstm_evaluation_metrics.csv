@@ -1,0 +1,2 @@
+rmse,mae,mape,r2,direction_accuracy,mean_absolute_percentage_error
+0.5793068184114482,0.5479030840273528,100.0,-8.480498842829569,0.0,100.0

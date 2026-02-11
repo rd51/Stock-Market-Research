@@ -1,0 +1,9 @@
+Metric,Static_OLS,Lagged_OLS
+r2,0.0,0.0
+adjusted_r2,0.0,0.0
+rmse,inf,inf
+mae,inf,inf
+mape,inf,inf
+durbin_watson,,
+f_statistic,0.0,0.0
+f_pvalue,1.0,1.0

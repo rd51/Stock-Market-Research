@@ -1,0 +1,18 @@
+{
+  "date_range_days": 1825,
+  "auto_refresh_interval": 300,
+  "theme": "light",
+  "default_regime": "all",
+  "cache_enabled": true,
+  "max_cache_age": 3600,
+  "data_sources": [
+    "NSE",
+    "Investing.com",
+    "data.gov.in"
+  ],
+  "alert_thresholds": {
+    "volatility_high": 0.05,
+    "prediction_confidence_low": 0.6,
+    "regime_change": true
+  }
+}

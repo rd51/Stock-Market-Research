@@ -1,0 +1,139 @@
+
+<!DOCTYPE html>
+<html>
+<head>
+    <title>Financial Forecasting Model Comparison Report</title>
+    <style>
+        body {
+            font-family: Arial, sans-serif;
+            margin: 40px;
+            background-color: #f5f5f5;
+        }
+        .container {
+            max-width: 1200px;
+            margin: 0 auto;
+            background-color: white;
+            padding: 30px;
+            border-radius: 10px;
+            box-shadow: 0 0 20px rgba(0,0,0,0.1);
+        }
+        h1 {
+            color: #2c3e50;
+            border-bottom: 3px solid #3498db;
+            padding-bottom: 10px;
+        }
+        h2 {
+            color: #34495e;
+            margin-top: 30px;
+            border-left: 4px solid #3498db;
+            padding-left: 15px;
+        }
+        table {
+            width: 100%;
+            border-collapse: collapse;
+            margin: 20px 0;
+        }
+        th, td {
+            padding: 12px;
+            text-align: left;
+            border-bottom: 1px solid #ddd;
+        }
+        th {
+            background-color: #f8f9fa;
+            font-weight: bold;
+        }
+        tr:nth-child(even) {
+            background-color: #f8f9fa;
+        }
+        .metric-box {
+            background-color: #ecf0f1;
+            padding: 15px;
+            margin: 10px 0;
+            border-radius: 5px;
+            border-left: 4px solid #3498db;
+        }
+        .recommendation {
+            background-color: #d4edda;
+            border: 1px solid #c3e6cb;
+            color: #155724;
+            padding: 15px;
+            margin: 20px 0;
+            border-radius: 5px;
+        }
+        .plot-container {
+            margin: 30px 0;
+            text-align: center;
+        }
+        .plot-container img {
+            max-width: 100%;
+            height: auto;
+            border: 1px solid #ddd;
+            border-radius: 5px;
+        }
+    </style>
+</head>
+<body>
+    <div class="container">
+        <h1>Financial Forecasting Model Comparison Report</h1>
+        <p><strong>Generated:</strong> 2026-02-08 20:12:31</p>
+
+        <h2>Model Performance Summary</h2>
+        <table>
+            <thead>
+                <tr>
+                    <th>Model</th>
+                    <th>RMSE</th>
+                    <th>MAE</th>
+                    <th>MAPE</th>
+                    <th>R²</th>
+                    <th>Direction Accuracy</th>
+                </tr>
+            </thead>
+            <tbody>
+
+                <tr>
+                    <td>OLS</td>
+                    <td>0.1030</td>
+                    <td>0.0847</td>
+                    <td>240.56%</td>
+                    <td>0.9901</td>
+                    <td>97.7%</td>
+                </tr>
+
+                <tr>
+                    <td>RF</td>
+                    <td>0.1102</td>
+                    <td>0.0896</td>
+                    <td>284.58%</td>
+                    <td>0.9887</td>
+                    <td>97.3%</td>
+                </tr>
+
+            </tbody>
+        </table>
+
+        <h2>Key Findings</h2>
+        <div class="metric-box">
+
+            <p><strong>Best RMSE:</strong> OLS (0.1030)</p>
+            <p><strong>Best Direction Accuracy:</strong> OLS (97.7%)</p>
+            <p><strong>Best R² Score:</strong> OLS (0.9901)</p>
+
+        </div>
+
+        <h2>Recommendations</h2>
+        <div class="recommendation">
+
+            <p><strong>Recommended Model:</strong> OLS</p>
+            <p><em>Rationale: Best balance of accuracy and directional prediction</em></p>
+<p><strong>Ensemble Weights:</strong></p><ul><li>OLS: 0.517</li><li>RF: 0.483</li></ul>
+        </div>
+
+        <h2>Performance Visualizations</h2>
+        <p>Plots would be embedded here in a full implementation.</p>
+
+        <hr>
+        <p><em>Report generated automatically by ComparisonReportGenerator</em></p>
+    </div>
+</body>
+</html>

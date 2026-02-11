@@ -1,0 +1,32 @@
+{
+  "RandomForest": {
+    "regime_2": {
+      "mae": 0.40517344072550593,
+      "mse": 0.24651366052567825,
+      "rmse": 0.496501420466929,
+      "mape": 213.2067730848235,
+      "r2_score": 0.8013764715571494,
+      "direction_accuracy": 0.8814691151919867,
+      "mean_absolute_error": 0.40517344072550593,
+      "median_absolute_error": 0.3698962538124116,
+      "explained_variance": 0.8036575546661614,
+      "mean_error": 0.053207849123332644,
+      "std_error": 0.49364216322893945
+    }
+  },
+  "LinearRegression": {
+    "regime_2": {
+      "mae": 0.4020313565009593,
+      "mse": 0.24328052995248517,
+      "rmse": 0.49323476150053047,
+      "mape": 207.0178292934527,
+      "r2_score": 0.803981502860464,
+      "direction_accuracy": 0.8797996661101837,
+      "mean_absolute_error": 0.4020313565009593,
+      "median_absolute_error": 0.3568889596650706,
+      "explained_variance": 0.8062696483664324,
+      "mean_error": 0.05329015312687005,
+      "std_error": 0.4903475191455545
+    }
+  }
+}

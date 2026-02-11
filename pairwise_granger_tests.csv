@@ -1,0 +1,7 @@
+,p_value,f_statistic,lags,significant,cause_variable,effect_variable
+VIX_to_Returns,0.0048071818375862935,7.950585630929312,1,True,VIX,Returns
+VIX_to_Unemployment,0.10343325154998426,28.257912378745292,20,False,VIX,Unemployment
+Returns_to_VIX,0.20959709218751857,9.64503458839423,7,False,Returns,VIX
+Returns_to_Unemployment,0.22522338993457516,9.399622824191162,7,False,Returns,Unemployment
+Unemployment_to_VIX,0.06901835548389329,27.563358936007205,18,False,Unemployment,VIX
+Unemployment_to_Returns,0.0009728499947994958,37.77843850978064,15,True,Unemployment,Returns

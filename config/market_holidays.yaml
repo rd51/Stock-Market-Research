@@ -1,0 +1,135 @@
+# Market Holidays Configuration
+# This file contains market holiday configurations for different exchanges
+
+# Indian market holidays (NSE/BSE)
+india:
+  exchange: "NSE"
+  timezone: "Asia/Kolkata"
+  holidays:
+    # Republic Day
+    - "2024-01-26"
+    - "2025-01-26"
+    - "2026-01-26"
+
+    # Holi
+    - "2024-03-25"
+    - "2025-03-14"
+    - "2026-03-04"
+
+    # Good Friday
+    - "2024-03-29"
+    - "2025-04-18"
+    - "2026-04-03"
+
+    # Ram Navami
+    - "2024-04-17"
+    - "2025-04-06"
+    - "2026-03-27"
+
+    # Mahavir Jayanti
+    - "2024-04-21"
+    - "2025-04-10"
+    - "2026-03-31"
+
+    # Labour Day
+    - "2024-05-01"
+    - "2025-05-01"
+    - "2026-05-01"
+
+    # Buddha Purnima
+    - "2024-05-23"
+    - "2025-05-12"
+    - "2026-05-02"
+
+    # Independence Day
+    - "2024-08-15"
+    - "2025-08-15"
+    - "2026-08-15"
+
+    # Ganesh Chaturthi
+    - "2024-09-07"
+    - "2025-08-27"
+    - "2026-09-15"
+
+    # Gandhi Jayanti
+    - "2024-10-02"
+    - "2025-10-02"
+    - "2026-10-02"
+
+    # Dussehra
+    - "2024-10-12"
+    - "2025-10-02"
+    - "2026-10-20"
+
+    # Diwali
+    - "2024-11-01"
+    - "2025-10-21"
+    - "2026-11-09"
+
+    # Christmas
+    - "2024-12-25"
+    - "2025-12-25"
+    - "2026-12-25"
+
+# US market holidays (NYSE)
+usa:
+  exchange: "NYSE"
+  timezone: "America/New_York"
+  holidays:
+    # New Year's Day
+    - "2024-01-01"
+    - "2025-01-01"
+    - "2026-01-01"
+
+    # Martin Luther King Jr. Day
+    - "2024-01-15"
+    - "2025-01-20"
+    - "2026-01-19"
+
+    # Presidents' Day
+    - "2024-02-19"
+    - "2025-02-17"
+    - "2026-02-16"
+
+    # Good Friday
+    - "2024-03-29"
+    - "2025-04-18"
+    - "2026-04-03"
+
+    # Memorial Day
+    - "2024-05-27"
+    - "2025-05-26"
+    - "2026-05-25"
+
+    # Independence Day
+    - "2024-07-04"
+    - "2025-07-04"
+    - "2026-07-04"
+
+    # Labor Day
+    - "2024-09-02"
+    - "2025-09-01"
+    - "2026-08-31"
+
+    # Thanksgiving
+    - "2024-11-28"
+    - "2025-11-27"
+    - "2026-11-26"
+
+    # Christmas
+    - "2024-12-25"
+    - "2025-12-25"
+    - "2026-12-25"
+
+# Weekend configuration
+weekends:
+  - "saturday"
+  - "sunday"
+
+# Special trading sessions (if any)
+special_sessions:
+  # Muhurat Trading (Diwali)
+  muhurat_trading:
+    - "2024-11-01 18:00-20:00"
+    - "2025-10-21 18:00-20:00"
+    - "2026-11-09 18:00-20:00"

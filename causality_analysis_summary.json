@@ -1,0 +1,8 @@
+{
+  "n_variables": 3,
+  "n_observations": 299,
+  "optimal_lag": 1,
+  "significant_relationships": 2,
+  "feedback_loops": 0,
+  "system_complexity_score": 16.666666666666664
+}
