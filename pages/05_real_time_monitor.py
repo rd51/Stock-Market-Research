@@ -27,6 +27,9 @@ except Exception as e:
     json = None
     warnings.warn(f"json module not available; JSON exports disabled: {e}")
 
+import logging
+logger = logging.getLogger(__name__)
+
 st.set_page_config(page_title="Real-Time Monitor - Stock Market AI Analytics", page_icon="📈")
 
 # Import monitoring components

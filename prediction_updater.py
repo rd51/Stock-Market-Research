@@ -206,7 +206,8 @@ class RealtimePredictorUpdater:
         # Check for alerts
         alerts = self.generate_live_alerts(market_data, predictions, self.prediction_history)
 
-        result['alerts'] = [asdict(alert) for alert in alerts]
+        # Explicitly use a dict factory to ensure consistent dict types and avoid linter complaints
+        result['alerts'] = [asdict(alert, dict_factory=dict) for alert in alerts]
 
         logger.info(f"Predictions updated - consensus: {consensus.get('mean_prediction', 'N/A')}")
         return result
