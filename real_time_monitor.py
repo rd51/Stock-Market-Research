@@ -589,26 +589,35 @@ class RealtimeDataFeed:
 
         logger.info(f"All data fetched - freshness: {result['overall_freshness']}")
 
-        # If no real data available for key sources, provide a demo fallback so UI shows meaningful values
-        key_sources = [result.get('unemployment'), result.get('vix'), result.get('market_index')]
-        if all(v is None for v in key_sources):
-            logger.warning("No data found for unemployment/VIX/market_index - generating demo fallback data")
-            demo_ts = datetime.now()
-            demo_unemployment = {
+        # If some key sources are missing, provide demo fallbacks for the missing ones
+        demo_ts = datetime.now()
+        demo_used = False
+
+        if result.get('unemployment') is None:
+            logger.warning("Unemployment data missing - injecting demo unemployment data")
+            result['unemployment'] = {
                 'timestamp': demo_ts,
                 'unemployment_rate': 7.5,
                 'data_source': 'demo',
                 'is_fresh': True,
                 'age_hours': 0
             }
-            demo_vix = {
+            demo_used = True
+
+        if result.get('vix') is None:
+            logger.warning("VIX data missing - injecting demo VIX data")
+            result['vix'] = {
                 'timestamp': demo_ts,
                 'vix_close': 15.0,
                 'data_source': 'demo',
                 'is_fresh': True,
                 'age_minutes': 0
             }
-            demo_market = {
+            demo_used = True
+
+        if result.get('market_index') is None:
+            logger.warning("Market index data missing - injecting demo market data")
+            result['market_index'] = {
                 'timestamp': demo_ts,
                 'index_name': 'NIFTY50',
                 'close': 18000.0,
@@ -618,18 +627,15 @@ class RealtimeDataFeed:
                 'data_source': 'demo',
                 'is_fresh': True
             }
+            demo_used = True
 
-            # Update result and mark demo mode
-            result['unemployment'] = demo_unemployment
-            result['vix'] = demo_vix
-            result['market_index'] = demo_market
+        if demo_used:
             result['overall_freshness'] = 'demo'
             result['demo_mode'] = True
-
-            # Cache the demo data so subsequent calls can use it
+            # Cache missing demo items individually
             try:
-                self.cache_data({'unemployment': demo_unemployment, 'vix': demo_vix, 'market_index': demo_market}, cache_type='standard')
-                logger.info('Demo fallback data cached')
+                self.cache_data({k: v for k, v in result.items() if k in ('unemployment','vix','market_index')}, cache_type='standard')
+                logger.info('Demo fallback data cached for missing sources')
             except Exception as e:
                 logger.warning(f'Failed to cache demo data: {e}')
 

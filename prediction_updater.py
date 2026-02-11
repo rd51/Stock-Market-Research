@@ -300,11 +300,24 @@ class RealtimePredictorUpdater:
 
             self.prediction_history.append(history_entry)
 
-            # Keep only last 90 days
+            # Keep only last 90 days (normalize timestamps to IST)
             cutoff_date = datetime.now(IST) - timedelta(days=90)
+
+            def _to_aware(ts):
+                try:
+                    t = pd.to_datetime(ts)
+                    if t.tzinfo is None or t.tz is None:
+                        # Localize naive timestamps to IST
+                        t = IST.localize(t) if hasattr(IST, 'localize') else t.replace(tzinfo=IST)
+                    else:
+                        t = t.astimezone(IST)
+                    return t
+                except Exception:
+                    return None
+
             self.prediction_history = [
                 h for h in self.prediction_history
-                if pd.to_datetime(h['timestamp']) > cutoff_date
+                if (_to_aware(h['timestamp']) is not None and _to_aware(h['timestamp']) > cutoff_date)
             ]
 
             # Save to file
@@ -333,9 +346,21 @@ class RealtimePredictorUpdater:
 
             # Get recent predictions
             cutoff_date = datetime.now(IST) - timedelta(days=n)
+
+            def _to_aware(ts):
+                try:
+                    t = pd.to_datetime(ts)
+                    if t.tzinfo is None or t.tz is None:
+                        t = IST.localize(t) if hasattr(IST, 'localize') else t.replace(tzinfo=IST)
+                    else:
+                        t = t.astimezone(IST)
+                    return t
+                except Exception:
+                    return None
+
             recent_predictions = [
                 h for h in self.prediction_history
-                if pd.to_datetime(h['timestamp']) > cutoff_date and h.get('market_return') is not None
+                if (_to_aware(h['timestamp']) is not None and _to_aware(h['timestamp']) > cutoff_date and h.get('market_return') is not None)
             ]
 
             if not recent_predictions:
