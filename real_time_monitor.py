@@ -333,11 +333,25 @@ class RealtimeDataFeed:
             cached = self.load_cached_data(source_name, max_age_hours=168)  # 1 week
             if cached:
                 cached_data = cached['data']
-                age = (datetime.now() - cached_data['timestamp']).total_seconds() / 3600
+                # Normalize timestamp if stored as string
+                ts = cached_data.get('timestamp')
+                try:
+                    if isinstance(ts, str):
+                        ts = pd.to_datetime(ts)
+                except Exception as e:
+                    logger.warning(f"Could not parse cached timestamp for unemployment: {e}")
+                    ts = None
+
+                if ts is not None:
+                    age = (datetime.now() - ts).total_seconds() / 3600
+                else:
+                    age = float('inf')
+
                 cached_data.update({
                     'data_source': 'cache',
                     'is_fresh': age < 24,
-                    'age_hours': age
+                    'age_hours': age,
+                    'timestamp': ts
                 })
                 return cached_data
 
@@ -400,11 +414,25 @@ class RealtimeDataFeed:
             cached = self.load_cached_data(source_name, max_age_hours=6)  # 6 hours for VIX
             if cached:
                 cached_data = cached['data']
-                age = (datetime.now() - cached_data['timestamp']).total_seconds() / 60
+                # Normalize timestamp if stored as string
+                ts = cached_data.get('timestamp')
+                try:
+                    if isinstance(ts, str):
+                        ts = pd.to_datetime(ts)
+                except Exception as e:
+                    logger.warning(f"Could not parse cached timestamp for vix: {e}")
+                    ts = None
+
+                if ts is not None:
+                    age = (datetime.now() - ts).total_seconds() / 60
+                else:
+                    age = float('inf')
+
                 cached_data.update({
                     'data_source': 'cache',
                     'is_fresh': age < 60,  # Fresh if less than 1 hour
-                    'age_minutes': age
+                    'age_minutes': age,
+                    'timestamp': ts
                 })
                 return cached_data
 
@@ -474,10 +502,24 @@ class RealtimeDataFeed:
             cached = self.load_cached_data(source_name, max_age_hours=6)  # 6 hours for indices
             if cached:
                 cached_data = cached['data']
-                age = (datetime.now() - cached_data['timestamp']).total_seconds() / 3600
+                # Normalize timestamp if stored as string
+                ts = cached_data.get('timestamp')
+                try:
+                    if isinstance(ts, str):
+                        ts = pd.to_datetime(ts)
+                except Exception as e:
+                    logger.warning(f"Could not parse cached timestamp for {index}: {e}")
+                    ts = None
+
+                if ts is not None:
+                    age = (datetime.now() - ts).total_seconds() / 3600
+                else:
+                    age = float('inf')
+
                 cached_data.update({
                     'data_source': 'cache',
-                    'is_fresh': age < 1  # Fresh if less than 1 hour
+                    'is_fresh': age < 1,  # Fresh if less than 1 hour
+                    'timestamp': ts
                 })
                 return cached_data
 
