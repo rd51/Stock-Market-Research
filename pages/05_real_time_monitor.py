@@ -366,9 +366,13 @@ def create_live_prediction_dashboard(predictor: Optional[Any]):
         st.error("❌ Prediction updater not available")
         return
 
+    # Respect Data Mode selection
+    data_mode = st.session_state.get('data_mode', 'Hybrid')
+    use_live_data = False if data_mode == 'Cache' else True
+
     try:
         # Get latest predictions
-        latest_predictions = predictor.update_predictions_on_new_data(use_live_data=True)
+        latest_predictions = predictor.update_predictions_on_new_data(use_live_data=use_live_data)
 
         if latest_predictions:
             # Create prediction cards
@@ -673,10 +677,14 @@ def create_market_stress_indicator(realtime_feed: Optional[Any]):
         st.error("❌ Real-time feed not available")
         return
 
+    # Respect Data Mode selection
+    data_mode = st.session_state.get('data_mode', 'Hybrid')
+    use_live = False if data_mode == 'Cache' else True
+
     try:
         # Get market data for stress calculation
-        vix_data = realtime_feed.get_latest_vix(use_live=True)
-        market_data = realtime_feed.get_latest_market_index('NIFTY50', use_live=True)
+        vix_data = realtime_feed.get_latest_vix(use_live=use_live)
+        market_data = realtime_feed.get_latest_market_index('NIFTY50', use_live=use_live)
 
         if vix_data and market_data:
             vix_value = vix_data.get('value', 20)
