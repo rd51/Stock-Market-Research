@@ -35,6 +35,7 @@ pydantic
 matplotlib
 seaborn
 plotly
+openpyxl
 
 # Production
 gunicorn

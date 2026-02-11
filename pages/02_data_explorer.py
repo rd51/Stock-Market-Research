@@ -562,20 +562,33 @@ def create_export_options(data: pd.DataFrame):
             use_container_width=True
         )
 
-    # Excel Export
+    # Excel Export (uses openpyxl); fallback to CSV if openpyxl not available
     with col2:
-        excel_buffer = io.BytesIO()
-        with pd.ExcelWriter(excel_buffer, engine='openpyxl') as writer:
-            data.to_excel(writer, sheet_name='Market_Data', index=False)
-        excel_data = excel_buffer.getvalue()
+        try:
+            import openpyxl  # noqa: F401
+            excel_buffer = io.BytesIO()
+            with pd.ExcelWriter(excel_buffer, engine='openpyxl') as writer:
+                data.to_excel(writer, sheet_name='Market_Data', index=False)
+            excel_data = excel_buffer.getvalue()
 
-        st.download_button(
-            label="📊 Download Excel",
-            data=excel_data,
-            file_name=f"market_data_{datetime.now().strftime('%Y%m%d_%H%M%S')}.xlsx",
-            mime="application/vnd.openxmlformats-officedocument.spreadsheetml.sheet",
-            use_container_width=True
-        )
+            st.download_button(
+                label="📊 Download Excel",
+                data=excel_data,
+                file_name=f"market_data_{datetime.now().strftime('%Y%m%d_%H%M%S')}.xlsx",
+                mime="application/vnd.openxmlformats-officedocument.spreadsheetml.sheet",
+                use_container_width=True
+            )
+        except Exception as e:
+            # openpyxl not installed or failed to write Excel; offer CSV download with a warning
+            st.warning("⚠️ Excel export is currently unavailable. Install 'openpyxl' to enable Excel downloads.")
+            csv_data = data.to_csv(index=False)
+            st.download_button(
+                label="📄 Download CSV (Excel not available)",
+                data=csv_data,
+                file_name=f"market_data_{datetime.now().strftime('%Y%m%d_%H%M%S')}.csv",
+                mime="text/csv",
+                use_container_width=True
+            )
 
     # Plot Export (placeholder for future implementation)
     with col3:
