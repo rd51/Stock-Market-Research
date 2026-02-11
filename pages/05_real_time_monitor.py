@@ -39,11 +39,9 @@ except ImportError:
 # Import Prediction Updater — support multiple class names for compatibility
 try:
     import prediction_updater as _pu
-    if hasattr(_pu, 'PredictionUpdater'):
-        PredictionUpdater = _pu.PredictionUpdater
-    elif hasattr(_pu, 'RealtimePredictorUpdater'):
-        PredictionUpdater = _pu.RealtimePredictorUpdater
-    else:
+    # Use getattr to avoid attribute access errors for static analysis
+    PredictionUpdater = getattr(_pu, 'PredictionUpdater', None) or getattr(_pu, 'RealtimePredictorUpdater', None)
+    if PredictionUpdater is None:
         raise ImportError("No suitable PredictionUpdater class found in prediction_updater module")
     PREDICTOR_AVAILABLE = True
 except Exception as e:
@@ -63,11 +61,14 @@ def initialize_realtime_components() -> Tuple[Optional[Any], Optional[Any]]:
         except Exception as e:
             st.error(f"❌ Failed to initialize real-time feed: {e}")
 
-    if PREDICTOR_AVAILABLE:
+    if PREDICTOR_AVAILABLE and PredictionUpdater is not None:
         try:
             predictor = PredictionUpdater()
         except Exception as e:
             st.error(f"❌ Failed to initialize prediction updater: {e}")
+    elif PREDICTOR_AVAILABLE:
+        # Class lookup succeeded earlier but class is None — warn
+        st.warning("⚠️ Prediction updater module found but no compatible class available.")
 
     return realtime_feed, predictor
 
@@ -543,7 +544,9 @@ def create_scraping_cache_status_log(realtime_feed: Optional[Any]):
 
         # Display recent logs
         log_df = pd.DataFrame(log_entries)
-        log_df['timestamp'] = log_df['timestamp'].dt.strftime('%H:%M:%S')
+        # Ensure timestamp column is datetime-like then format safely
+        log_df['timestamp'] = pd.to_datetime(log_df['timestamp'], errors='coerce')
+        log_df['timestamp'] = log_df['timestamp'].apply(lambda ts: ts.strftime('%H:%M:%S') if hasattr(ts, 'strftime') else 'N/A')
 
         # Color code log levels
         def color_log_level(val):
@@ -746,9 +749,11 @@ def create_export_download_options(realtime_feed: Optional[Any], predictor: Opti
                         'market': realtime_feed.get_latest_market_index('NIFTY50')
                     }
 
-                    if not JSON_AVAILABLE:
+                    if not (JSON_AVAILABLE and json is not None):
                         st.error("❌ JSON export not available (json module missing)")
                     else:
+                        # Type-guard for static analysis
+                        assert json is not None
                         json_data = json.dumps(data, indent=2, default=str)
                         st.download_button(
                             label="Download JSON",
@@ -769,9 +774,10 @@ def create_export_download_options(realtime_feed: Optional[Any], predictor: Opti
                 if predictor:
                     predictions = predictor.update_predictions_on_new_data()
                     if predictions:
-                        if not JSON_AVAILABLE:
+                        if not (JSON_AVAILABLE and json is not None):
                             st.error("❌ JSON export not available (json module missing)")
                         else:
+                            assert json is not None
                             json_data = json.dumps(predictions, indent=2, default=str)
                             st.download_button(
                                 label="Download JSON",
@@ -794,9 +800,10 @@ def create_export_download_options(realtime_feed: Optional[Any], predictor: Opti
                 if realtime_feed:
                     stats = realtime_feed.get_monitoring_stats()
                     if stats:
-                        if not JSON_AVAILABLE:
+                        if not (JSON_AVAILABLE and json is not None):
                             st.error("❌ JSON export not available (json module missing)")
                         else:
+                            assert json is not None
                             json_data = json.dumps(stats, indent=2, default=str)
                             st.download_button(
                                 label="Download JSON",
@@ -824,9 +831,10 @@ def create_export_download_options(realtime_feed: Optional[Any], predictor: Opti
                     'alerts': ['System Operational']
                 }
 
-                if not JSON_AVAILABLE:
+                if not (JSON_AVAILABLE and json is not None):
                     st.error("❌ JSON export not available (json module missing)")
                 else:
+                    assert json is not None
                     json_data = json.dumps(report_data, indent=2)
                     st.download_button(
                         label="Download Report",
