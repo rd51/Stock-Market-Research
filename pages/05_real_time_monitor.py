@@ -17,6 +17,7 @@ import time
 from typing import Dict, List, Any, Optional, Tuple
 import warnings
 warnings.filterwarnings('ignore')
+import html
 
 # JSON availability (defensive import for constrained environments)
 try:
@@ -846,9 +847,7 @@ def main():
         create_emerging_divergences_detection(realtime_feed, predictor)
         st.markdown("---")
 
-        create_30day_accuracy_tracker(predictor)
-        st.markdown("---")
-
+        # 30-Day Accuracy Tracker removed per user request
         create_data_quality_dashboard(realtime_feed)
 
     with tab3:
