@@ -257,64 +257,9 @@ def create_data_freshness_indicators(realtime_feed: Optional[Any], predictor: Op
             f"{status} {age_display}"
         )
 
-def create_market_status_indicator(realtime_feed: Optional[Any]):
-    """Create market status indicator."""
-    st.subheader("🏛️ Market Status")
-
-    if realtime_feed is None:
-        st.error("❌ Real-time feed not available")
-        return
-
-    # Determine whether to attempt live fetches based on Data Mode
-    data_mode = st.session_state.get('data_mode', 'Hybrid')
-    use_live = False if data_mode == 'Cache' else True
-
-    try:
-        # Get latest market data
-        market_data = realtime_feed.get_latest_market_index('NIFTY50', use_live=use_live)
-        vix_data = realtime_feed.get_latest_vix(use_live=use_live)
-
-        if market_data and vix_data:
-            market_value = market_data.get('value', 0)
-            market_change = market_data.get('change_percent', 0)
-            vix_value = vix_data.get('value', 0)
-
-            # Determine market status
-            if market_change > 1.0:
-                market_status = "🚀 Bullish"
-            elif market_change < -1.0:
-                market_status = "📉 Bearish"
-            else:
-                market_status = "➡️ Sideways"
-
-            # Determine volatility status
-            if vix_value > 25:
-                vol_status = "🌪️ High Volatility"
-            elif vix_value > 18:
-                vol_status = "⚠️ Moderate Volatility"
-            else:
-                vol_status = "😌 Low Volatility"
-
-            col1, col2, col3, col4 = st.columns(4)
-
-            with col1:
-                st.metric("NIFTY 50", f"{market_value:,.0f}", f"{market_change:+.2f}%")
-
-            with col2:
-                st.metric("Market Status", market_status)
-
-            with col3:
-                st.metric("VIX", f"{vix_value:.2f}")
-
-            with col4:
-                st.metric("Volatility", vol_status)
-
-        else:
-            st.warning("⚠️ Market data not available")
-
-    except Exception as e:
-        st.error(f"❌ Error getting market status: {e}")
-
+# Market Status removed per user request
+# The market status UI and its corresponding function have been removed to simplify the Real-Time Monitor page.
+# If you want this functionality restored later, I can reintroduce a lightweight, robust version.
 def create_live_metrics_cards(realtime_feed: Optional[Any], predictor: Optional[Any]):
     """Create live metrics cards."""
     st.subheader("📈 Live Metrics")
@@ -688,71 +633,9 @@ def create_live_settings_panel():
             st.selectbox("Chart Theme", ["Light", "Dark", "Auto"], index=2)
             st.slider("Display Precision", 1, 4, 2, 1)
 
-def create_market_stress_indicator(realtime_feed: Optional[Any]):
-    """Create market stress indicator."""
-    st.subheader("🌪️ Market Stress Indicator")
-
-    if realtime_feed is None:
-        st.error("❌ Real-time feed not available")
-        return
-
-    # Respect Data Mode selection
-    data_mode = st.session_state.get('data_mode', 'Hybrid')
-    use_live = False if data_mode == 'Cache' else True
-
-    try:
-        # Get market data for stress calculation
-        vix_data = realtime_feed.get_latest_vix(use_live=use_live)
-        market_data = realtime_feed.get_latest_market_index('NIFTY50', use_live=use_live)
-
-        if vix_data and market_data:
-            vix_value = vix_data.get('value', 20)
-            market_volatility = abs(market_data.get('change_percent', 0))
-
-            # Calculate stress score (simplified)
-            stress_score = (vix_value / 20) * 0.6 + (market_volatility / 2) * 0.4
-            stress_score = min(stress_score, 5.0)  # Cap at 5
-
-            # Determine stress level
-            if stress_score < 1.0:
-                stress_level = "😌 Calm"
-                stress_desc = "Market conditions are stable"
-            elif stress_score < 2.0:
-                stress_level = "🙂 Normal"
-                stress_desc = "Typical market activity"
-            elif stress_score < 3.0:
-                stress_level = "😟 Elevated"
-                stress_desc = "Increased market uncertainty"
-            elif stress_score < 4.0:
-                stress_level = "😰 High"
-                stress_desc = "Significant market stress"
-            else:
-                stress_level = "😱 Extreme"
-                stress_desc = "Extreme market volatility"
-
-            # Display stress indicator
-            col1, col2, col3 = st.columns(3)
-
-            with col1:
-                st.metric("Stress Score", f"{stress_score:.2f}")
-
-            with col2:
-                st.metric("Stress Level", stress_level)
-
-            with col3:
-                st.metric("VIX Contribution", f"{(vix_value / 20) * 0.6:.2f}")
-
-            st.info(f"📊 {stress_desc}")
-
-            # Simple stress gauge (text-based for now)
-            st.progress(min(stress_score / 5.0, 1.0))
-            st.caption("Market Stress Gauge (0-5 scale)")
-
-        else:
-            st.warning("⚠️ Insufficient data for stress calculation")
-
-    except Exception as e:
-        st.error(f"❌ Error calculating market stress: {e}")
+# Market Stress Indicator removed per user request
+# The stress indicator and its calculations were removed to declutter the UI.
+# If you want a lighter-weight version re-added later, I can implement that.
 
 def create_scheduled_update_countdown():
     """Create scheduled update countdown."""
@@ -951,16 +834,13 @@ def main():
         create_data_freshness_indicators(realtime_feed, predictor)
         st.markdown("---")
 
-        create_market_status_indicator(realtime_feed)
-        st.markdown("---")
+        # Market Status and Market Stress Indicator removed per user request
 
         create_live_metrics_cards(realtime_feed, predictor)
         st.markdown("---")
 
         create_live_prediction_dashboard(predictor)
         st.markdown("---")
-
-        create_market_stress_indicator(realtime_feed)
 
     with tab2:
         create_emerging_divergences_detection(realtime_feed, predictor)
