@@ -309,16 +309,16 @@ class FeatureEngineer:
         """
         logger.info(f"Creating seasonality features from {date_col}")
         
+        # Ensure date_col exists in the DataFrame
         if date_col not in df.columns:
-            logger.error(f"Date column {date_col} not found in dataframe")
-            return df
-        
+            raise KeyError(f"The specified date column '{date_col}' does not exist in the DataFrame.")
+
+        # Ensure date_col is a datetime type
         df_copy = df.copy()
-        
-        # Ensure date column is datetime
-        if not pd.api.types.is_datetime64_any_dtype(df_copy[date_col]):
-            df_copy[date_col] = pd.to_datetime(df_copy[date_col])
-        
+        df_copy[date_col] = pd.to_datetime(df_copy[date_col], errors='coerce')
+        if df_copy[date_col].isnull().all():
+            raise ValueError(f"All values in column '{date_col}' could not be converted to datetime.")
+
         # Basic date features
         df_copy['year'] = df_copy[date_col].dt.year
         df_copy['month'] = df_copy[date_col].dt.month
@@ -399,7 +399,7 @@ class FeatureEngineer:
                 if method == 'minmax':
                     scaler = MinMaxScaler()
                     # Fit only on non-NaN values
-                    valid_data = df_copy[col].dropna().values.reshape(-1, 1)
+                    valid_data = df_copy[col].dropna().to_numpy().reshape(-1, 1)
                     scaler.fit(valid_data)
                     scaled_values = scaler.transform(df_copy[[col]].fillna(df_copy[col].mean()))
                     df_copy[f"{col}_normalized"] = scaled_values.flatten()
@@ -407,7 +407,7 @@ class FeatureEngineer:
                     
                 elif method == 'standard':
                     scaler = StandardScaler()
-                    valid_data = df_copy[col].dropna().values.reshape(-1, 1)
+                    valid_data = df_copy[col].dropna().to_numpy().reshape(-1, 1)
                     scaler.fit(valid_data)
                     scaled_values = scaler.transform(df_copy[[col]].fillna(df_copy[col].mean()))
                     df_copy[f"{col}_standardized"] = scaled_values.flatten()
@@ -416,7 +416,7 @@ class FeatureEngineer:
                 elif method == 'robust':
                     from sklearn.preprocessing import RobustScaler
                     scaler = RobustScaler()
-                    valid_data = df_copy[col].dropna().values.reshape(-1, 1)
+                    valid_data = df_copy[col].dropna().to_numpy().reshape(-1, 1)
                     scaler.fit(valid_data)
                     scaled_values = scaler.transform(df_copy[[col]].fillna(df_copy[col].mean()))
                     df_copy[f"{col}_robust"] = scaled_values.flatten()
@@ -491,7 +491,7 @@ class FeatureEngineer:
     
     def create_comprehensive_features(self, df: pd.DataFrame, 
                                     vix_col: str = 'VIX', 
-                                    price_col: str = None) -> pd.DataFrame:
+                                    price_col: Optional[str] = None) -> pd.DataFrame:
         """
         Create a comprehensive set of features for machine learning.
         
@@ -509,6 +509,8 @@ class FeatureEngineer:
         
         # 1. Lag features
         lag_columns = [vix_col]
+        if price_col is None:
+            price_col = 'Close'
         if price_col and price_col in df_featured.columns:
             lag_columns.append(price_col)
         

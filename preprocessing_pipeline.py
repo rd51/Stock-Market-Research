@@ -407,7 +407,7 @@ class DataPreprocessingPipeline:
                     df_featured = self.feature_engineer.create_comprehensive_features(
                         df,
                         vix_col=feature_config.get('vix_col', 'VIX'),
-                        price_col=feature_config.get('price_col')
+                        price_col=feature_config.get('price_col', 'Close')
                     )
                 else:
                     # Apply individual feature engineering steps
@@ -456,6 +456,7 @@ class DataPreprocessingPipeline:
             df_normalized = df.copy()
 
             # Determine columns to normalize
+            # Determine per-source columns to normalize (do not mutate the incoming parameter)
             if columns_to_normalize is None:
                 # Auto-select numeric columns (exclude date-related and categorical)
                 exclude_patterns = ['year', 'month', 'day', 'week', 'quarter', 'regime', 'shock', 'is_', 'crash']
@@ -465,15 +466,17 @@ class DataPreprocessingPipeline:
                     if not any(pattern in col.lower() for pattern in exclude_patterns):
                         numeric_cols.append(col)
 
-                columns_to_normalize = numeric_cols[:10]  # Limit to first 10 to avoid over-normalization
+                cols_to_norm = numeric_cols[:10]  # Limit to first 10 to avoid over-normalization
+            else:
+                cols_to_norm = list(columns_to_normalize)
 
-            if columns_to_normalize:
+            if cols_to_norm:
                 df_normalized = self.feature_engineer.normalize_features(
-                    df_normalized, columns_to_normalize, method=method
+                    df_normalized, cols_to_norm, method=method
                 )
 
             normalized_data[source_name] = df_normalized
-            logger.info(f"Normalized {len(columns_to_normalize)} columns in {source_name}")
+            logger.info(f"Normalized {len(cols_to_norm)} columns in {source_name}")
 
         self.processed_data = normalized_data
         logger.info(f"Data normalization complete for {len(normalized_data)} datasets")
@@ -509,6 +512,11 @@ class DataPreprocessingPipeline:
 
             if time_based_split:
                 # Time-based split (chronological order)
+                # Ensure data is sorted chronologically by any date-like column
+                date_cols = [c for c in df.columns if 'date' in c.lower()]
+                if date_cols:
+                    df = df.sort_values(date_cols[0])
+
                 n_total = len(df)
                 n_train = int(n_total * train_ratio)
                 n_val = int(n_total * val_ratio)
@@ -553,7 +561,11 @@ class DataPreprocessingPipeline:
             Dict[str, Dict[str, str]]: File paths for saved data
         """
         if split_data is None:
-            split_data = getattr(self, 'split_data_result', {})
+            # Ensure we have a dict even if split_data_result is None
+            split_data = getattr(self, 'split_data_result', {}) or {}
+
+        if not isinstance(split_data, dict):
+            raise ValueError("split_data must be a dictionary")
 
         logger.info(f"Saving processed data in {save_format} format")
 

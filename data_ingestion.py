@@ -398,7 +398,7 @@ class DataIngestionSystem:
                     
                     # Look for VIX values in the page
                     # This is placeholder - actual implementation would depend on page structure
-                    vix_values = soup.find_all(text=lambda text: text and 'VIX' in text.upper())
+                    vix_values = soup.find_all(string=lambda text: isinstance(text, str) and 'VIX' in text.upper())
                     
                     # If we can't find historical data on this page, try archive approach
                     if not vix_values:
@@ -627,8 +627,8 @@ class DataIngestionSystem:
             # Find dataset links
             dataset_links = []
             for link in soup.find_all('a', href=True):
-                if '/catalog/' in link['href'] and 'unemployment' in link['href'].lower():
-                    dataset_links.append('https://data.gov.in' + link['href'])
+                if '/catalog/' in str(link['href']) and 'unemployment' in str(link['href']).lower():
+                    dataset_links.append('https://data.gov.in' + str(link['href']))
 
             unemployment_data = []
 
@@ -646,7 +646,7 @@ class DataIngestionSystem:
                     title = title.text.strip() if title else "Unknown"
 
                     # Look for data download links or embedded data
-                    download_links = soup.find_all('a', string=lambda text: text and 'download' in text.lower())
+                    download_links = soup.find_all('a', string=lambda text: isinstance(text, str) and 'download' in text.lower())
 
                     # For demonstration, we'll collect metadata
                     unemployment_data.append({
@@ -699,8 +699,8 @@ class DataIngestionSystem:
             # Find PLFS dataset links
             plfs_links = []
             for link in soup.find_all('a', href=True):
-                if '/catalog/' in link['href'] and ('plfs' in link['href'].lower() or 'labour' in link['href'].lower()):
-                    plfs_links.append('https://data.gov.in' + link['href'])
+                if '/catalog/' in str(link['href']) and ('plfs' in str(link['href']).lower() or 'labour' in str(link['href']).lower()):
+                    plfs_links.append('https://data.gov.in' + str(link['href']))
             
             all_data = []
             
@@ -714,7 +714,7 @@ class DataIngestionSystem:
                     soup = BeautifulSoup(response.content, 'html.parser')
                     
                     # Find download links for CSV or Excel files
-                    download_links = soup.find_all('a', href=lambda href: href and ('.csv' in href.lower() or '.xlsx' in href.lower() or '.xls' in href.lower()))
+                    download_links = soup.find_all('a', href=lambda href: isinstance(href, str) and ('.csv' in href.lower() or '.xlsx' in href.lower() or '.xls' in href.lower()))
                     
                     for download_link in download_links[:2]:  # Limit to first 2 files per dataset
                         file_url = download_link['href']
@@ -826,7 +826,10 @@ class DataIngestionSystem:
                     if rate_cols:
                         rate_val = row[rate_cols[0]]
                         if pd.notna(rate_val):
-                            unemployment_rate = float(rate_val)
+                            try:
+                                unemployment_rate = float(rate_val)
+                            except:
+                                pass
                     
                     urban_rate = None
                     if urban_cols:
@@ -1011,7 +1014,7 @@ class DataIngestionSystem:
                             continue
                     
                     # Also look for downloadable files
-                    download_links = soup.find_all('a', href=lambda href: href and any(ext in href.lower() for ext in ['.pdf', '.xlsx', '.xls', '.csv']))
+                    download_links = soup.find_all('a', href=lambda href: isinstance(href, str) and any(ext in href.lower() for ext in ['.pdf', '.xlsx', '.xls', '.csv']))
                     
                     for download_link in download_links[:3]:  # Limit downloads
                         file_url = download_link['href']
