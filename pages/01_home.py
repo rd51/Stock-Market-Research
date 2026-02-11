@@ -12,8 +12,16 @@ import streamlit as st
 import pandas as pd
 import numpy as np
 from datetime import datetime, timedelta
-import plotly.graph_objects as go
-import plotly.express as px
+try:
+    import plotly.graph_objects as go
+    import plotly.express as px
+    PLOTLY_AVAILABLE = True
+except Exception as e:
+    PLOTLY_AVAILABLE = False
+    go = None
+    px = None
+    import warnings
+    warnings.warn(f"plotly not available; interactive visualizations disabled: {e}")
 from typing import Dict, Any
 
 st.set_page_config(page_title="Home - Stock Market AI Analytics", page_icon="🏠")
@@ -202,6 +210,9 @@ def create_quick_links():
 def main():
     """Main function for the home page."""
     st.title("Stock Market Analysis: AI-Driven Complex System Dynamics")
+
+    if not PLOTLY_AVAILABLE:
+        st.warning("⚠️ Plotly not available; interactive charts disabled. Install 'plotly' to enable them.")
 
     # Create all sections
     create_executive_summary()
