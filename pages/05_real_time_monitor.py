@@ -36,11 +36,21 @@ try:
 except ImportError:
     MONITOR_AVAILABLE = False
 
+# Import Prediction Updater — support multiple class names for compatibility
 try:
-    from prediction_updater import PredictionUpdater
+    import prediction_updater as _pu
+    if hasattr(_pu, 'PredictionUpdater'):
+        PredictionUpdater = _pu.PredictionUpdater
+    elif hasattr(_pu, 'RealtimePredictorUpdater'):
+        PredictionUpdater = _pu.RealtimePredictorUpdater
+    else:
+        raise ImportError("No suitable PredictionUpdater class found in prediction_updater module")
     PREDICTOR_AVAILABLE = True
-except ImportError:
+except Exception as e:
     PREDICTOR_AVAILABLE = False
+    PredictionUpdater = None
+    import warnings
+    warnings.warn(f"prediction_updater not available: {e}")
 
 def initialize_realtime_components() -> Tuple[Optional[Any], Optional[Any]]:
     """Initialize real-time monitoring components."""
