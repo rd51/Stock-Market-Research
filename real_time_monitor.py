@@ -171,7 +171,10 @@ class RealtimeDataFeed:
 
     def _setup_scheduler(self):
         """Set up the background scheduler for automated updates."""
-        if not APSCHEDULER_AVAILABLE:
+        # Defensive guards for environments where APScheduler is not fully available
+        if not APSCHEDULER_AVAILABLE or BackgroundScheduler is None or MemoryJobStore is None or AsyncIOExecutor is None or CronTrigger is None:
+            logger.warning("APScheduler components missing; scheduler disabled")
+            self.scheduler = None
             return
 
         self.scheduler = BackgroundScheduler(
@@ -233,8 +236,8 @@ class RealtimeDataFeed:
         Args:
             time_str: Time in 'HH:MM' format (IST)
         """
-        if not APSCHEDULER_AVAILABLE or not self.scheduler:
-            logger.warning("Scheduler not available - cannot schedule daily updates")
+        if not APSCHEDULER_AVAILABLE or not self.scheduler or CronTrigger is None:
+            logger.warning("Scheduler or CronTrigger not available - cannot schedule daily updates")
             return
 
         try:
