@@ -13,7 +13,7 @@ import pandas as pd
 import numpy as np
 from datetime import datetime, timedelta
 import logging
-from typing import Dict, List, Optional, Tuple, Union, Any
+from typing import Dict, List, Optional, Tuple, Union, Any, Hashable
 import warnings
 import os
 import json
