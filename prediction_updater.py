@@ -521,7 +521,7 @@ class RealtimePredictorUpdater:
 
     def generate_live_alerts(self, live_data: Dict[str, Any],
                            predictions: Dict[str, float],
-                           historical_context: List[Dict[str, Any]]) -> List[ModelAlert]:
+                           historical_context: List[Dict[Hashable, Any]]) -> List[ModelAlert]:
         """
         Generate alerts based on live data and predictions.
 
@@ -685,7 +685,7 @@ class RealtimePredictorUpdater:
             logger.error(f"Failed to format dashboard data: {str(e)}")
             return {}
 
-    def handle_model_prediction_failure(self, model_name: str, error: Exception) -> Optional[Dict[str, Any]]:
+    def handle_model_prediction_failure(self, model_name: str, error: Any) -> Optional[Dict[str, Any]]:
         """
         Handle prediction failure for a specific model.
 
@@ -896,7 +896,8 @@ def main():
 
         # Override the live data fetch method for testing
         if predictor.live_data_feed:
-            predictor.live_data_feed.fetch_all_latest_data = lambda **kwargs: mock_live_data
+            # Provide a mock function compatible with the original signature
+            predictor.live_data_feed.fetch_all_latest_data = lambda use_live=True, respect_market_hours=True: mock_live_data
 
         print("1. Testing Prediction Updates:")
         prediction_result = predictor.update_predictions_on_new_data(use_live_data=False)
