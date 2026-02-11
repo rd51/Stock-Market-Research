@@ -32,6 +32,8 @@ optuna
 tqdm
 joblib
 pydantic
+matplotlib
+seaborn
 
 # Production
 gunicorn

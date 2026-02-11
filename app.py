@@ -23,7 +23,18 @@ warnings.filterwarnings('ignore')
 
 import html
 from io import BytesIO
-import matplotlib.pyplot as plt
+import warnings
+
+# Optional plotting libraries — initialize safely for headless environments
+try:
+    import matplotlib
+    matplotlib.use('Agg')  # Non-interactive backend for servers/containers
+    import matplotlib.pyplot as plt
+    MATPLOTLIB_AVAILABLE = True
+except Exception as e:
+    MATPLOTLIB_AVAILABLE = False
+    plt = None
+    warnings.warn(f"matplotlib not available; plotting disabled: {e}")
 
 # Configure page
 st.set_page_config(
@@ -651,6 +662,10 @@ def create_metric_card(title: str, value: Any, subtitle: str = "",
 
 def export_visualization():
     """Render a simple market plot and provide a PNG download button."""
+    if not MATPLOTLIB_AVAILABLE:
+        st.error("Plotting disabled: matplotlib is not available in this environment.")
+        return
+
     data = None
     if 'data_cache' in st.session_state:
         data = st.session_state.data_cache.get('market_data')
