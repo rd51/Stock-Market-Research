@@ -269,7 +269,7 @@ class DataIngestionSystem:
             daily_dates = pd.date_range(start=min_date, end=max_date, freq='D')
             daily_unemp = pd.DataFrame({'Date': daily_dates})
             daily_unemp = daily_unemp.merge(unemployment_df, on='Date', how='left')
-            daily_unemp = daily_unemp.fillna(method='ffill')
+            daily_unemp = daily_unemp.ffill()
             
             # Merge with base
             base_dates = base_dates.merge(daily_unemp, on='Date', how='left')
@@ -889,7 +889,7 @@ class DataIngestionSystem:
             
             # Forward fill the values
             fill_cols = ['UnemploymentRate', 'Urban_Rate', 'Rural_Rate', 'State', 'Region']
-            merged_df[fill_cols] = merged_df[fill_cols].fillna(method='ffill')
+            merged_df[fill_cols] = merged_df[fill_cols].ffill()
             
             return merged_df
             

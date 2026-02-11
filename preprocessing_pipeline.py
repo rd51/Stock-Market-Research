@@ -297,7 +297,7 @@ class DataPreprocessingPipeline:
                 df_processed[numeric_cols] = df_processed[numeric_cols].interpolate(method='linear')
 
                 # Fill remaining NaNs with forward/backward fill
-                df_processed = df_processed.fillna(method='ffill').fillna(method='bfill')
+                df_processed = df_processed.ffill().bfill()
 
                 logger.info(f"Interpolated missing values in {source_name}")
 
@@ -349,7 +349,7 @@ class DataPreprocessingPipeline:
                     df_clean.loc[outliers, col] = np.nan
 
                 # Interpolate outliers
-                df_clean = df_clean.interpolate(method='linear').fillna(method='ffill').fillna(method='bfill')
+                df_clean = df_clean.interpolate(method='linear').ffill().bfill()
 
             elif method == 'zscore':
                 # Z-score method
@@ -363,7 +363,7 @@ class DataPreprocessingPipeline:
                     outliers = z_scores > threshold
                     df_clean.loc[outliers, col] = np.nan
 
-                df_clean = df_clean.interpolate(method='linear').fillna(method='ffill').fillna(method='bfill')
+                df_clean = df_clean.interpolate(method='linear').ffill().bfill()
 
             # Log outlier removal
             logger.info(f"Processed outliers in {source_name}: {df.shape[0] - df_clean.shape[0]} rows affected")

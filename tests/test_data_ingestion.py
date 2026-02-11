@@ -252,7 +252,7 @@ def test_missing_values_handling(preprocessing_pipeline, data_with_missing):
     assert missing_counts['vix'] > 0
 
     # Test imputation (forward fill)
-    filled_data = data_with_missing.fillna(method='ffill')
+    filled_data = data_with_missing.ffill()
 
     # Check no missing values remain
     assert filled_data.isnull().sum().sum() == 0
