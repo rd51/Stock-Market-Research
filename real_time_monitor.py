@@ -63,12 +63,21 @@ except ImportError:
     SCRAPING_UTILS_AVAILABLE = False
     logging.warning("web_scraping_utils not available - scraping disabled")
 
+# Ensure logging directory exists; fall back to 'logs' if creation fails
+log_dir = os.path.join('data', 'logs')
+try:
+    os.makedirs(log_dir, exist_ok=True)
+except Exception as e:
+    warnings.warn(f"Could not create {log_dir}; falling back to 'logs': {e}")
+    log_dir = 'logs'
+    os.makedirs(log_dir, exist_ok=True)
+
 # Set up logging
 logging.basicConfig(
     level=logging.INFO,
     format='%(asctime)s - %(name)s - %(levelname)s - %(message)s',
     handlers=[
-        logging.FileHandler('data/logs/realtime_monitor.log'),
+        logging.FileHandler(os.path.join(log_dir, 'realtime_monitor.log')),
         logging.StreamHandler()
     ]
 )
