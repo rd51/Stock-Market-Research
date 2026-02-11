@@ -757,19 +757,19 @@ def create_export_download_options(realtime_feed: Optional[Any], predictor: Opti
         if st.button("🔮 Export Predictions", use_container_width=True):
             try:
                 if predictor:
-                        predictions = predictor.update_predictions_on_new_data()
-                        if predictions:
-                            if not JSON_AVAILABLE:
-                                st.error("❌ JSON export not available (json module missing)")
-                            else:
-                                json_data = json.dumps(predictions, indent=2, default=str)
-                                st.download_button(
-                                    label="Download JSON",
-                                    data=json_data,
-                                    file_name=f"predictions_{datetime.now().strftime('%Y%m%d_%H%M%S')}.json",
-                                    mime="application/json",
-                                    use_container_width=True
-                                )
+                    predictions = predictor.update_predictions_on_new_data()
+                    if predictions:
+                        if not JSON_AVAILABLE:
+                            st.error("❌ JSON export not available (json module missing)")
+                        else:
+                            json_data = json.dumps(predictions, indent=2, default=str)
+                            st.download_button(
+                                label="Download JSON",
+                                data=json_data,
+                                file_name=f"predictions_{datetime.now().strftime('%Y%m%d_%H%M%S')}.json",
+                                mime="application/json",
+                                use_container_width=True
+                            )
                     else:
                         st.error("❌ No predictions to export")
                 else:
