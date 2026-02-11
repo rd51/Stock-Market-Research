@@ -86,6 +86,9 @@ def create_data_source_controls():
             help="Live: Real-time data only, Cache: Stored data only, Hybrid: Live with cache fallback"
         )
 
+        # Persist selection in session state so other functions can respect it
+        st.session_state['data_mode'] = data_mode
+
     with col2:
         refresh_rate = st.selectbox(
             "Refresh Rate",
@@ -102,6 +105,20 @@ def create_data_source_controls():
 
     return data_mode, refresh_rate, auto_refresh, manual_refresh
 
+def _resolve_timestamp(item: Any) -> Optional[datetime]:
+    """Normalize timestamp fields from different data sources to a datetime or None."""
+    if item is None:
+        return None
+    if isinstance(item, dict):
+        # Common keys: 'last_update', 'timestamp'
+        ts = item.get('last_update') or item.get('timestamp') or item.get('data', {}).get('timestamp')
+        try:
+            return pd.to_datetime(ts)
+        except Exception:
+            return None
+    return None
+
+
 def create_data_freshness_indicators(realtime_feed: Optional[Any], predictor: Optional[Any]):
     """Create data freshness indicators."""
     st.subheader("📊 Data Freshness Status")
@@ -110,17 +127,26 @@ def create_data_freshness_indicators(realtime_feed: Optional[Any], predictor: Op
         st.error("❌ Real-time feed not available")
         return
 
+    # Determine whether to attempt live fetches based on user selection
+    data_mode = st.session_state.get('data_mode', 'Hybrid')
+    use_live = False if data_mode == 'Cache' else True
+
     try:
-        stats = realtime_feed.get_monitoring_stats()
-    except:
+        # Prefer fetching latest combined data when possible so freshness reflects choice
+        if hasattr(realtime_feed, 'fetch_all_latest_data'):
+            stats = realtime_feed.fetch_all_latest_data(use_live=use_live)
+        else:
+            stats = realtime_feed.get_monitoring_stats()
+    except Exception:
         stats = {}
 
     col1, col2, col3, col4 = st.columns(4)
 
     # Unemployment data freshness
     with col1:
-        unemployment_fresh = stats.get('unemployment', {}).get('last_update')
-        if unemployment_fresh:
+        unemployment_item = stats.get('unemployment') or {}
+        unemployment_fresh = _resolve_timestamp(unemployment_item)
+        if unemployment_fresh is not None:
             age_minutes = (datetime.now() - unemployment_fresh).total_seconds() / 60
             if age_minutes < 5:
                 status = "🟢"
@@ -128,19 +154,21 @@ def create_data_freshness_indicators(realtime_feed: Optional[Any], predictor: Op
                 status = "🟡"
             else:
                 status = "🔴"
+            age_display = f"{age_minutes:.0f}min ago"
         else:
             status = "⚪"
-            age_minutes = float('inf')
+            age_display = "No data"
 
         st.metric(
             "Unemployment Data",
-            f"{status} {age_minutes:.0f}min ago" if age_minutes != float('inf') else f"{status} No data"
+            f"{status} {age_display}"
         )
 
     # VIX data freshness
     with col2:
-        vix_fresh = stats.get('vix', {}).get('last_update')
-        if vix_fresh:
+        vix_item = stats.get('vix') or {}
+        vix_fresh = _resolve_timestamp(vix_item)
+        if vix_fresh is not None:
             age_minutes = (datetime.now() - vix_fresh).total_seconds() / 60
             if age_minutes < 5:
                 status = "🟢"
@@ -148,19 +176,21 @@ def create_data_freshness_indicators(realtime_feed: Optional[Any], predictor: Op
                 status = "🟡"
             else:
                 status = "🔴"
+            age_display = f"{age_minutes:.0f}min ago"
         else:
             status = "⚪"
-            age_minutes = float('inf')
+            age_display = "No data"
 
         st.metric(
             "VIX Data",
-            f"{status} {age_minutes:.0f}min ago" if age_minutes != float('inf') else f"{status} No data"
+            f"{status} {age_display}"
         )
 
     # Market data freshness
     with col3:
-        market_fresh = stats.get('market_indices', {}).get('last_update')
-        if market_fresh:
+        market_item = stats.get('market_index') or stats.get('market_indices') or {}
+        market_fresh = _resolve_timestamp(market_item)
+        if market_fresh is not None:
             age_minutes = (datetime.now() - market_fresh).total_seconds() / 60
             if age_minutes < 5:
                 status = "🟢"
@@ -168,13 +198,14 @@ def create_data_freshness_indicators(realtime_feed: Optional[Any], predictor: Op
                 status = "🟡"
             else:
                 status = "🔴"
+            age_display = f"{age_minutes:.0f}min ago"
         else:
             status = "⚪"
-            age_minutes = float('inf')
+            age_display = "No data"
 
         st.metric(
             "Market Data",
-            f"{status} {age_minutes:.0f}min ago" if age_minutes != float('inf') else f"{status} No data"
+            f"{status} {age_display}"
         )
 
     # Prediction freshness
@@ -182,8 +213,8 @@ def create_data_freshness_indicators(realtime_feed: Optional[Any], predictor: Op
         if predictor:
             try:
                 pred_stats = predictor.get_prediction_accuracy_last_n_days(1)
-                pred_fresh = pred_stats.get('last_update')
-                if pred_fresh:
+                pred_fresh = _resolve_timestamp(pred_stats)
+                if pred_fresh is not None:
                     age_minutes = (datetime.now() - pred_fresh).total_seconds() / 60
                     if age_minutes < 10:
                         status = "🟢"
@@ -191,19 +222,20 @@ def create_data_freshness_indicators(realtime_feed: Optional[Any], predictor: Op
                         status = "🟡"
                     else:
                         status = "🔴"
+                    age_display = f"{age_minutes:.0f}min ago"
                 else:
                     status = "⚪"
-                    age_minutes = float('inf')
-            except:
+                    age_display = "No data"
+            except Exception:
                 status = "⚪"
-                age_minutes = float('inf')
+                age_display = "No data"
         else:
             status = "⚪"
-            age_minutes = float('inf')
+            age_display = "No data"
 
         st.metric(
             "Predictions",
-            f"{status} {age_minutes:.0f}min ago" if age_minutes != float('inf') else f"{status} No data"
+            f"{status} {age_display}"
         )
 
 def create_market_status_indicator(realtime_feed: Optional[Any]):
@@ -214,10 +246,14 @@ def create_market_status_indicator(realtime_feed: Optional[Any]):
         st.error("❌ Real-time feed not available")
         return
 
+    # Determine whether to attempt live fetches based on Data Mode
+    data_mode = st.session_state.get('data_mode', 'Hybrid')
+    use_live = False if data_mode == 'Cache' else True
+
     try:
         # Get latest market data
-        market_data = realtime_feed.get_latest_market_index('NIFTY50', use_live=True)
-        vix_data = realtime_feed.get_latest_vix(use_live=True)
+        market_data = realtime_feed.get_latest_market_index('NIFTY50', use_live=use_live)
+        vix_data = realtime_feed.get_latest_vix(use_live=use_live)
 
         if market_data and vix_data:
             market_value = market_data.get('value', 0)
@@ -268,11 +304,15 @@ def create_live_metrics_cards(realtime_feed: Optional[Any], predictor: Optional[
         st.error("❌ Real-time feed not available")
         return
 
+    # Determine whether to attempt live fetches based on Data Mode
+    data_mode = st.session_state.get('data_mode', 'Hybrid')
+    use_live = False if data_mode == 'Cache' else True
+
     try:
         # Get latest data
-        unemployment_data = realtime_feed.get_latest_unemployment(use_live=True)
-        vix_data = realtime_feed.get_latest_vix(use_live=True)
-        market_data = realtime_feed.get_latest_market_index('NIFTY50', use_live=True)
+        unemployment_data = realtime_feed.get_latest_unemployment(use_live=use_live)
+        vix_data = realtime_feed.get_latest_vix(use_live=use_live)
+        market_data = realtime_feed.get_latest_market_index('NIFTY50', use_live=use_live)
 
         col1, col2, col3, col4 = st.columns(4)
 
@@ -742,11 +782,15 @@ def create_export_download_options(realtime_feed: Optional[Any], predictor: Opti
         if st.button("📊 Export Live Data", use_container_width=True):
             try:
                 if realtime_feed:
+                    # Respect data mode selection when exporting
+                    data_mode = st.session_state.get('data_mode', 'Hybrid')
+                    use_live = False if data_mode == 'Cache' else True
+
                     # Get current data
                     data = {
-                        'unemployment': realtime_feed.get_latest_unemployment(),
-                        'vix': realtime_feed.get_latest_vix(),
-                        'market': realtime_feed.get_latest_market_index('NIFTY50')
+                        'unemployment': realtime_feed.get_latest_unemployment(use_live=use_live),
+                        'vix': realtime_feed.get_latest_vix(use_live=use_live),
+                        'market': realtime_feed.get_latest_market_index('NIFTY50', use_live=use_live)
                     }
 
                     if not (JSON_AVAILABLE and json is not None):
