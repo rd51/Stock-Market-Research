@@ -315,10 +315,14 @@ class RealtimePredictorUpdater:
                 except Exception:
                     return None
 
-            self.prediction_history = [
-                h for h in self.prediction_history
-                if (_to_aware(h['timestamp']) is not None and _to_aware(h['timestamp']) > cutoff_date)
-            ]
+            # Materialize aware timestamps first to avoid None > datetime comparisons
+            new_history = []
+            for h in self.prediction_history:
+                t = _to_aware(h.get('timestamp'))
+                if t is not None and t > cutoff_date:
+                    new_history.append(h)
+
+            self.prediction_history = new_history
 
             # Save to file
             history_df = pd.DataFrame(self.prediction_history)
@@ -358,10 +362,11 @@ class RealtimePredictorUpdater:
                 except Exception:
                     return None
 
-            recent_predictions = [
-                h for h in self.prediction_history
-                if (_to_aware(h['timestamp']) is not None and _to_aware(h['timestamp']) > cutoff_date and h.get('market_return') is not None)
-            ]
+            recent_predictions = []
+            for h in self.prediction_history:
+                t = _to_aware(h.get('timestamp'))
+                if t is not None and t > cutoff_date and h.get('market_return') is not None:
+                    recent_predictions.append(h)
 
             if not recent_predictions:
                 logger.warning(f"No predictions with actual returns in last {n} days")
