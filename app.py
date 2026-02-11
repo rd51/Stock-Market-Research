@@ -666,6 +666,11 @@ def export_visualization():
         st.error("Plotting disabled: matplotlib is not available in this environment.")
         return
 
+    # Additional runtime guard for static type checkers (plt may be None at import failure)
+    if plt is None:
+        st.error("Plotting disabled: matplotlib is not available in this environment.")
+        return
+
     data = None
     if 'data_cache' in st.session_state:
         data = st.session_state.data_cache.get('market_data')
